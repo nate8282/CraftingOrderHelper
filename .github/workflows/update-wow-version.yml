@@ -15,10 +15,6 @@ jobs:
     permissions:
       contents: write
 
-    outputs:
-      updated: ${{ steps.update.outputs.updated }}
-      new_tag: ${{ steps.update.outputs.new_tag }}
-
     steps:
       - uses: actions/checkout@v4
 
@@ -82,16 +78,10 @@ jobs:
           git config user.email "52011990+nate8282@users.noreply.github.com"
           git add CraftingOrderHelper.toc
           git commit -m "Bump interface to $NEW_IFACE (WoW $WOW_VER)"
-          git push origin main
+          git push origin master
           git tag "v$NEW_VERSION"
           git push origin "v$NEW_VERSION"
 
           echo "updated=true" >> $GITHUB_OUTPUT
           echo "new_tag=v$NEW_VERSION" >> $GITHUB_OUTPUT
           echo "Released v$NEW_VERSION for WoW $WOW_VER (interface $NEW_IFACE)"
-
-  release:
-    needs: check-and-update
-    if: needs.check-and-update.outputs.updated == 'true'
-    uses: ./.github/workflows/release.yml
-    secrets: inherit
