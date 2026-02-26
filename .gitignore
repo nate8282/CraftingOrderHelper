@@ -1,0 +1,10 @@
+# Local dev config
+.claude/
+CLAUDE.md
+
+# Packager output
+.release/
+
+# OS files
+.DS_Store
+Thumbs.db

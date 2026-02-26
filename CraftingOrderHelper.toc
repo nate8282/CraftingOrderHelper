@@ -1,0 +1,10 @@
+## Interface: 120001
+## Title: Crafting Order Helper
+## Notes: Helps manage and track crafting orders.
+## Author: Nate8282
+## Version: 1.0.0
+## SavedVariables: CraftingOrderHelperSettings
+
+CraftingOrderHelper.lua
+
+## X-Curse-Project-ID: 0

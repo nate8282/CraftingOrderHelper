@@ -1,0 +1,50 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  busted:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua and busted
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.3 liblua5.3-dev luarocks
+          sudo luarocks install busted
+
+      - name: Run busted tests
+        run: busted --verbose
+
+  legacy-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Lua
+        run: sudo apt-get update && sudo apt-get install -y lua5.3
+
+      - name: Run legacy unit tests
+        run: lua5.3 tests/test_addon.lua
+
+  luacheck:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Luacheck
+        uses: nebularg/actions-luacheck@v1
+        with:
+          files: "CraftingOrderHelper.lua"
+          annotate: warning
