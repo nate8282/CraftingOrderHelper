@@ -1,6 +1,9 @@
 -- Legacy unit tests for CraftingOrderHelper
 -- Run: lua5.3 tests/test_addon.lua
 
+-- Lua 5.3 compat: WoW uses Lua 5.1 where unpack is a global
+if not unpack then unpack = table.unpack end
+
 local passed, failed = 0, 0
 
 local function test(name, fn)

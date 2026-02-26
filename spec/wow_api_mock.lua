@@ -1,6 +1,9 @@
 -- WoW API mock layer for busted tests
 -- Provides mock implementations of WoW API functions used by CraftingOrderHelper
 
+-- Lua 5.3 compat: WoW uses Lua 5.1 where unpack is a global
+if not unpack then unpack = table.unpack end
+
 local MockData = {
     player = { name = "Kaelen", realm = "Sargeras" },
     professions = { [1] = { name = "Leatherworking" }, [2] = { name = "Skinning" } },
