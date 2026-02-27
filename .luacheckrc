@@ -9,7 +9,7 @@ exclude_files = {
 }
 
 ignore = {
-    "11./SLASH_.*",     -- Slash command globals (SLASH_COH1, etc.)
+    "11./SLASH_.*",     -- Slash command globals (SLASH_COL1, etc.)
     "11./BINDING_.*",   -- Keybinding globals
     "212",              -- Unused arguments (WoW callbacks have fixed signatures)
     "432",              -- Shadowing upvalue 'self' (intentional in WoW SetScript callbacks and method defs)
@@ -17,7 +17,7 @@ ignore = {
 
 -- Globals the addon WRITES to
 globals = {
-    "COH_SavedData",
+    "COL_SavedData",
     "SlashCmdList",
     "UISpecialFrames",
 }
@@ -54,9 +54,9 @@ read_globals = {
     "GameFontNormalSmall",
 
     -- Named frames (created by CreateFrame with a global name)
-    "COH_QualityDropdown",
-    "COH_SortDropdown",
-    "COH_HideCompleted",
+    "COL_QualityDropdown",
+    "COL_SortDropdown",
+    "COL_HideCompleted",
 
     -- Dropdown API
     "UIDropDownMenu_Initialize",
@@ -91,7 +91,7 @@ files["spec/**"] = {
         "UIDropDownMenu_AddButton",
         "strsplit", "strtrim", "CreateAtlasMarkup",
         "C_Timer", "C_AddOns", "SlashCmdList",
-        "COH_SavedData", "MockData",
+        "COL_SavedData", "MockData",
     },
     ignore = {
         "211",  -- Unused local variable (mock data)
@@ -124,7 +124,7 @@ files["tests/**"] = {
         "UIDropDownMenu_AddButton",
         "strsplit", "strtrim", "CreateAtlasMarkup",
         "C_Timer", "C_AddOns", "SlashCmdList",
-        "COH_SavedData",
+        "COL_SavedData",
     },
     ignore = { "211", "212", "213", "311" },
     read_globals = { "dofile", "setmetatable", "os" },

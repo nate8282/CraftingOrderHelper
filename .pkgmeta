@@ -1,4 +1,4 @@
-package-as: CraftingOrderHelper
+package-as: CraftOrderList
 
 ignore:
   - .busted

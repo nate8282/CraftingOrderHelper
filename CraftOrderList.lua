@@ -1,16 +1,16 @@
 --[[
-    CraftingOrderHelper - Visual shopping list for crafting materials
+    CraftOrderList - Visual shopping list for crafting materials
     Shows what you need, what you have, and lets you search the AH directly.
 ]]
 
-local addonName, COH = ...
+local addonName, COL = ...
 
-COH.materialList = {}
-COH.recipeName = ""
-COH.mainFrame = nil
-COH.rows = {}
-COH.buttonsCreated = {}
-COH.settings = {
+COL.materialList = {}
+COL.recipeName = ""
+COL.mainFrame = nil
+COL.rows = {}
+COL.buttonsCreated = {}
+COL.settings = {
     qualityFilter = 0,
     hideCompleted = false,
     sortBy = "name",
@@ -44,7 +44,7 @@ end
 
 local function GetOwnedForMaterial(mat)
     if not mat.reagents then return 0 end
-    local filter = COH.settings.qualityFilter
+    local filter = COL.settings.qualityFilter
 
     if filter > 0 then
         local r = mat.reagents[filter]
@@ -63,7 +63,7 @@ local function GetOwnedForMaterial(mat)
 end
 
 local function GetSearchName(mat)
-    local quality = COH.settings.qualityFilter
+    local quality = COL.settings.qualityFilter
 
     if quality > 0 and mat.reagents then
         local r = mat.reagents[quality]
@@ -88,12 +88,12 @@ local function GetSearchName(mat)
 end
 
 local function GetNeeded(mat)
-    return mat.needed * COH.settings.craftCount
+    return mat.needed * COL.settings.craftCount
 end
 
 local function SortMaterials()
-    local sortBy = COH.settings.sortBy
-    table.sort(COH.materialList, function(a, b)
+    local sortBy = COL.settings.sortBy
+    table.sort(COL.materialList, function(a, b)
         if sortBy == "name" then
             return (a.name or "") < (b.name or "")
         elseif sortBy == "needed" then
@@ -114,16 +114,16 @@ end
 
 local function BuildMaterialList(recipeID, addToExisting)
     if not addToExisting then
-        COH.materialList = {}
+        COL.materialList = {}
     end
 
     local recipeInfo = C_TradeSkillUI.GetRecipeInfo(recipeID)
     if not recipeInfo then return false end
 
     if not addToExisting then
-        COH.recipeName = recipeInfo.name or "Unknown"
+        COL.recipeName = recipeInfo.name or "Unknown"
     else
-        COH.recipeName = "Multiple Recipes"
+        COL.recipeName = "Multiple Recipes"
     end
 
     local recipeSchematic = C_TradeSkillUI.GetRecipeSchematic(recipeID, false)
@@ -133,7 +133,7 @@ local function BuildMaterialList(recipeID, addToExisting)
 
     local existingByName = {}
     local existingByItemID = {}
-    for i, mat in ipairs(COH.materialList) do
+    for i, mat in ipairs(COL.materialList) do
         existingByName[mat.name] = i
         if mat.reagents and mat.reagents[1] and mat.reagents[1].itemID then
             existingByItemID[mat.reagents[1].itemID] = i
@@ -160,9 +160,9 @@ local function BuildMaterialList(recipeID, addToExisting)
                     or (displayName ~= "Loading..." and existingByName[displayName])
 
                 if existingIdx then
-                    COH.materialList[existingIdx].needed = COH.materialList[existingIdx].needed + reagentSlot.quantityRequired
-                elseif #COH.materialList < MAX_ITEMS then
-                    table.insert(COH.materialList, {
+                    COL.materialList[existingIdx].needed = COL.materialList[existingIdx].needed + reagentSlot.quantityRequired
+                elseif #COL.materialList < MAX_ITEMS then
+                    table.insert(COL.materialList, {
                         name = displayName,
                         icon = itemIcon or 134400,
                         needed = reagentSlot.quantityRequired,
@@ -170,15 +170,15 @@ local function BuildMaterialList(recipeID, addToExisting)
                         searched = false,
                         manualCheck = false,
                     })
-                    existingByName[displayName] = #COH.materialList
-                    existingByItemID[firstReagent.itemID] = #COH.materialList
+                    existingByName[displayName] = #COL.materialList
+                    existingByItemID[firstReagent.itemID] = #COL.materialList
                 end
             end
         end
     end
 
     SortMaterials()
-    return #COH.materialList > 0
+    return #COL.materialList > 0
 end
 
 -- ============================================================================
@@ -186,12 +186,12 @@ end
 -- ============================================================================
 
 local function GetProgressInfo()
-    local total = #COH.materialList
+    local total = #COL.materialList
     local complete = 0
     local totalNeeded = 0
     local totalOwned = 0
 
-    for _, mat in ipairs(COH.materialList) do
+    for _, mat in ipairs(COL.materialList) do
         local needed = GetNeeded(mat)
         local owned = GetOwnedForMaterial(mat)
         totalNeeded = totalNeeded + needed
@@ -209,9 +209,9 @@ end
 -- ============================================================================
 
 local function CreateMainFrame()
-    if COH.mainFrame then return COH.mainFrame end
+    if COL.mainFrame then return COL.mainFrame end
 
-    local frame = CreateFrame("Frame", "COH_MainFrame", UIParent, "BackdropTemplate")
+    local frame = CreateFrame("Frame", "COL_MainFrame", UIParent, "BackdropTemplate")
     frame:SetSize(360, 460)
     frame:SetPoint("CENTER", UIParent, "CENTER", 400, 0)
     frame:SetMovable(true)
@@ -221,7 +221,7 @@ local function CreateMainFrame()
     frame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
         local point, _, relPoint, x, y = self:GetPoint()
-        COH.settings.framePos = { point, relPoint, x, y }
+        COL.settings.framePos = { point, relPoint, x, y }
     end)
     frame:SetFrameStrata("HIGH")
     frame:SetClampedToScreen(true)
@@ -251,7 +251,7 @@ local function CreateMainFrame()
     local titleIcon = titleBar:CreateTexture(nil, "ARTWORK")
     titleIcon:SetSize(20, 20)
     titleIcon:SetPoint("LEFT", 6, 0)
-    titleIcon:SetTexture("Interface\\AddOns\\CraftingOrderHelper\\Icon")
+    titleIcon:SetTexture("Interface\\AddOns\\CraftOrderList\\Icon")
 
     local title = titleBar:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     title:SetPoint("LEFT", titleIcon, "RIGHT", 4, 0)
@@ -282,7 +282,7 @@ local function CreateMainFrame()
     qualityLabel:SetText("Quality:")
     qualityLabel:SetTextColor(0.7, 0.7, 0.7)
 
-    local qualityDropdown = CreateFrame("Frame", "COH_QualityDropdown", frame, "UIDropDownMenuTemplate")
+    local qualityDropdown = CreateFrame("Frame", "COL_QualityDropdown", frame, "UIDropDownMenuTemplate")
     qualityDropdown:SetPoint("LEFT", qualityLabel, "RIGHT", -8, -2)
     UIDropDownMenu_SetWidth(qualityDropdown, 65)
     UIDropDownMenu_SetText(qualityDropdown, QUALITY_ICONS[0])
@@ -300,9 +300,9 @@ local function CreateMainFrame()
             info.value = i
             info.justifyH = "CENTER"
             info.func = function()
-                COH.settings.qualityFilter = i
+                COL.settings.qualityFilter = i
                 UIDropDownMenu_SetText(qualityDropdown, QUALITY_ICONS[i])
-                COH:UpdateMainFrame()
+                COL:UpdateMainFrame()
             end
             UIDropDownMenu_AddButton(info, level)
         end
@@ -316,10 +316,10 @@ local function CreateMainFrame()
 
     local SORT_LABELS = { name = "Name", needed = "Amount", status = "Completion" }
 
-    local sortDropdown = CreateFrame("Frame", "COH_SortDropdown", frame, "UIDropDownMenuTemplate")
+    local sortDropdown = CreateFrame("Frame", "COL_SortDropdown", frame, "UIDropDownMenuTemplate")
     sortDropdown:SetPoint("LEFT", sortLabel, "RIGHT", -8, -2)
     UIDropDownMenu_SetWidth(sortDropdown, 80)
-    UIDropDownMenu_SetText(sortDropdown, SORT_LABELS[COH.settings.sortBy] or "Name")
+    UIDropDownMenu_SetText(sortDropdown, SORT_LABELS[COL.settings.sortBy] or "Name")
     UIDropDownMenu_Initialize(sortDropdown, function(self, level)
         local options = { { "name", "Name" }, { "needed", "Amount" }, { "status", "Completion" } }
         for _, opt in ipairs(options) do
@@ -327,10 +327,10 @@ local function CreateMainFrame()
             info.text = opt[2]
             info.value = opt[1]
             info.func = function()
-                COH.settings.sortBy = opt[1]
+                COL.settings.sortBy = opt[1]
                 UIDropDownMenu_SetText(sortDropdown, opt[2])
                 SortMaterials()
-                COH:UpdateMainFrame()
+                COL:UpdateMainFrame()
             end
             UIDropDownMenu_AddButton(info, level)
         end
@@ -338,13 +338,13 @@ local function CreateMainFrame()
     frame.SORT_LABELS = SORT_LABELS
 
     -- Row 2 (y = -92): Hide Done + Craft count
-    local hideCheck = CreateFrame("CheckButton", "COH_HideCompleted", frame, "UICheckButtonTemplate")
+    local hideCheck = CreateFrame("CheckButton", "COL_HideCompleted", frame, "UICheckButtonTemplate")
     hideCheck:SetPoint("TOPLEFT", frame, "TOPLEFT", 8, -92)
     hideCheck:SetSize(24, 24)
     hideCheck.text:SetText("Hide Done")
     hideCheck:SetScript("OnClick", function(self)
-        COH.settings.hideCompleted = self:GetChecked()
-        COH:UpdateMainFrame()
+        COL.settings.hideCompleted = self:GetChecked()
+        COL:UpdateMainFrame()
     end)
     hideCheck:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -384,16 +384,16 @@ local function CreateMainFrame()
     local function UpdateCraftCount(val)
         if val < 1 then val = 1 end
         if val > 999 then val = 999 end
-        COH.settings.craftCount = val
+        COL.settings.craftCount = val
         craftValue:SetText(tostring(val))
-        COH:UpdateMainFrame()
+        COL:UpdateMainFrame()
     end
 
     craftDown:SetScript("OnClick", function()
-        UpdateCraftCount(COH.settings.craftCount - 1)
+        UpdateCraftCount(COL.settings.craftCount - 1)
     end)
     craftUp:SetScript("OnClick", function()
-        UpdateCraftCount(COH.settings.craftCount + 1)
+        UpdateCraftCount(COL.settings.craftCount + 1)
     end)
 
     -- Progress bar
@@ -418,7 +418,7 @@ local function CreateMainFrame()
     frame.progressText = progressText
 
     -- Scroll frame
-    local scrollFrame = CreateFrame("ScrollFrame", "COH_ScrollFrame", frame, "UIPanelScrollFrameTemplate")
+    local scrollFrame = CreateFrame("ScrollFrame", "COL_ScrollFrame", frame, "UIPanelScrollFrameTemplate")
     scrollFrame:SetPoint("TOPLEFT", 8, -138)
     scrollFrame:SetPoint("BOTTOMRIGHT", -28, 60)
 
@@ -445,9 +445,9 @@ local function CreateMainFrame()
     clearBtn.confirmPending = false
     clearBtn:SetScript("OnClick", function(self)
         if self.confirmPending then
-            COH.materialList = {}
-            COH.recipeName = ""
-            COH:UpdateMainFrame()
+            COL.materialList = {}
+            COL.recipeName = ""
+            COL:UpdateMainFrame()
             self.confirmPending = false
             self:SetText("Clear")
         else
@@ -473,7 +473,7 @@ local function CreateMainFrame()
     copyBtn:SetSize(70, 22)
     copyBtn:SetPoint("LEFT", clearBtn, "RIGHT", 4, 0)
     copyBtn:SetText("Copy")
-    copyBtn:SetScript("OnClick", function() COH:CopyListToChat() end)
+    copyBtn:SetScript("OnClick", function() COL:CopyListToChat() end)
     copyBtn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         GameTooltip:SetText("Copy to Chat", 1, 1, 1)
@@ -487,11 +487,11 @@ local function CreateMainFrame()
     uncheckBtn:SetPoint("LEFT", copyBtn, "RIGHT", 4, 0)
     uncheckBtn:SetText("Reset")
     uncheckBtn:SetScript("OnClick", function()
-        for _, mat in ipairs(COH.materialList) do
+        for _, mat in ipairs(COL.materialList) do
             mat.searched = false
             mat.manualCheck = false
         end
-        COH:UpdateMainFrame()
+        COL:UpdateMainFrame()
     end)
     uncheckBtn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
@@ -505,7 +505,7 @@ local function CreateMainFrame()
     searchNextBtn:SetSize(90, 22)
     searchNextBtn:SetPoint("LEFT", uncheckBtn, "RIGHT", 4, 0)
     searchNextBtn:SetText("Search Next")
-    searchNextBtn:SetScript("OnClick", function() COH:SearchNextMaterial() end)
+    searchNextBtn:SetScript("OnClick", function() COL:SearchNextMaterial() end)
     searchNextBtn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_TOP")
         GameTooltip:SetText("Search Next Material", 1, 1, 1)
@@ -516,7 +516,7 @@ local function CreateMainFrame()
     frame.searchNextBtn = searchNextBtn
 
     frame:Hide()
-    COH.mainFrame = frame
+    COL.mainFrame = frame
     return frame
 end
 
@@ -553,10 +553,10 @@ local function CreateMaterialRow(parent, index)
 
     row:SetScript("OnClick", function(self, button)
         if button == "RightButton" and self.matIndex then
-            local mat = COH.materialList[self.matIndex]
+            local mat = COL.materialList[self.matIndex]
             if mat then
                 mat.manualCheck = not mat.manualCheck
-                COH:UpdateMainFrame()
+                COL:UpdateMainFrame()
             end
         end
     end)
@@ -591,16 +591,16 @@ local function CreateMaterialRow(parent, index)
     searchBtn:SetPoint("RIGHT", -4, 0)
     searchBtn:SetText("Search AH")
     searchBtn:SetScript("OnClick", function()
-        local mat = COH.materialList[row.matIndex]
+        local mat = COL.materialList[row.matIndex]
         if mat then
             local searchName = GetSearchName(mat)
             if not searchName then
-                print("|cFFFFCC00COH:|r Item data still loading, try again in a moment.")
+                print("|cFFFFCC00COL:|r Item data still loading, try again in a moment.")
                 return
             end
-            COH:SearchAuctionHouse(searchName)
+            COL:SearchAuctionHouse(searchName)
             mat.searched = true
-            COH:UpdateMainFrame()
+            COL:UpdateMainFrame()
         end
     end)
     row.searchBtn = searchBtn
@@ -612,13 +612,13 @@ end
 -- Frame Updates
 -- ============================================================================
 
-function COH:UpdateMainFrame()
-    local frame = COH.mainFrame
+function COL:UpdateMainFrame()
+    local frame = COL.mainFrame
     if not frame then return end
 
-    frame.recipeName:SetText(COH.recipeName ~= "" and COH.recipeName or "No recipe selected")
+    frame.recipeName:SetText(COL.recipeName ~= "" and COL.recipeName or "No recipe selected")
 
-    for _, row in ipairs(COH.rows) do
+    for _, row in ipairs(COL.rows) do
         row:Hide()
     end
 
@@ -647,18 +647,18 @@ function COH:UpdateMainFrame()
     local content = frame.content
     local rowIndex = 0
 
-    for i, mat in ipairs(COH.materialList) do
+    for i, mat in ipairs(COL.materialList) do
         local needed = GetNeeded(mat)
         local owned = GetOwnedForMaterial(mat)
         local isComplete = owned >= needed
 
-        if not (COH.settings.hideCompleted and isComplete) then
+        if not (COL.settings.hideCompleted and isComplete) then
             rowIndex = rowIndex + 1
 
-            local row = COH.rows[rowIndex]
+            local row = COL.rows[rowIndex]
             if not row then
                 row = CreateMaterialRow(content, rowIndex)
-                COH.rows[rowIndex] = row
+                COL.rows[rowIndex] = row
             end
 
             row:ClearAllPoints()
@@ -670,8 +670,8 @@ function COH:UpdateMainFrame()
             end
 
             local displayID = mat.reagents and mat.reagents[1] and mat.reagents[1].itemID
-            if COH.settings.qualityFilter > 0 and mat.reagents and mat.reagents[COH.settings.qualityFilter] then
-                displayID = mat.reagents[COH.settings.qualityFilter].itemID
+            if COL.settings.qualityFilter > 0 and mat.reagents and mat.reagents[COL.settings.qualityFilter] then
+                displayID = mat.reagents[COL.settings.qualityFilter].itemID
             end
 
             row.itemID = displayID
@@ -707,7 +707,7 @@ function COH:UpdateMainFrame()
     -- Summary line
     if total > 0 then
         local missing = total - complete
-        local hiddenCount = COH.settings.hideCompleted and complete or 0
+        local hiddenCount = COL.settings.hideCompleted and complete or 0
         if missing == 0 then
             frame.summary:SetText("All materials collected!")
             frame.summary:SetTextColor(unpack(COLORS.have))
@@ -725,7 +725,7 @@ function COH:UpdateMainFrame()
 
     -- Craft count display
     if frame.craftValue then
-        frame.craftValue:SetText(tostring(COH.settings.craftCount))
+        frame.craftValue:SetText(tostring(COL.settings.craftCount))
     end
 end
 
@@ -733,7 +733,7 @@ end
 -- Auction House Integration
 -- ============================================================================
 
-function COH:SearchAuctionHouse(itemName)
+function COL:SearchAuctionHouse(itemName)
     if not itemName then return end
     itemName = itemName:gsub("^%d+%s+", "")
 
@@ -746,38 +746,38 @@ function COH:SearchAuctionHouse(itemName)
                 searchBar.SearchButton:Click()
             end
         else
-            print("|cFFFFCC00COH:|r Search bar not available.")
+            print("|cFFFFCC00COL:|r Search bar not available.")
         end
     else
-        print("|cFFFFCC00COH:|r Open the Auction House to search.")
+        print("|cFFFFCC00COL:|r Open the Auction House to search.")
     end
 end
 
-function COH:SearchNextMaterial()
-    for _, mat in ipairs(COH.materialList) do
+function COL:SearchNextMaterial()
+    for _, mat in ipairs(COL.materialList) do
         local needed = GetNeeded(mat)
         local owned = GetOwnedForMaterial(mat)
         if owned < needed and not mat.searched then
             local searchName = GetSearchName(mat)
             if searchName then
-                COH:SearchAuctionHouse(searchName)
+                COL:SearchAuctionHouse(searchName)
                 mat.searched = true
-                COH:UpdateMainFrame()
+                COL:UpdateMainFrame()
                 return
             end
         end
     end
-    print("|cFFFFCC00COH:|r All materials searched!")
+    print("|cFFFFCC00COL:|r All materials searched!")
 end
 
-function COH:CopyListToChat()
-    if #COH.materialList == 0 then
-        print("|cFFFFCC00COH:|r No materials in list.")
+function COL:CopyListToChat()
+    if #COL.materialList == 0 then
+        print("|cFFFFCC00COL:|r No materials in list.")
         return
     end
 
     local parts = {}
-    for _, mat in ipairs(COH.materialList) do
+    for _, mat in ipairs(COL.materialList) do
         local needed = GetNeeded(mat)
         local owned = GetOwnedForMaterial(mat)
         local need = needed - owned
@@ -787,7 +787,7 @@ function COH:CopyListToChat()
     end
 
     if #parts == 0 then
-        print("|cFFFFCC00COH:|r You have all materials!")
+        print("|cFFFFCC00COL:|r You have all materials!")
         return
     end
 
@@ -797,55 +797,55 @@ function COH:CopyListToChat()
     local chatBox = ChatFrame1EditBox
     if chatBox and chatBox:IsShown() then
         chatBox:Insert(text)
-        print("|cFFFFCC00COH:|r Pasted into chat.")
+        print("|cFFFFCC00COL:|r Pasted into chat.")
         return
     end
 
     -- Fallback: popup edit box for Ctrl+C
-    if not COH.editBox then
-        local eb = CreateFrame("EditBox", "COH_CopyBox", UIParent, "InputBoxTemplate")
+    if not COL.editBox then
+        local eb = CreateFrame("EditBox", "COL_CopyBox", UIParent, "InputBoxTemplate")
         eb:SetSize(400, 30)
         eb:SetPoint("TOP", 0, -100)
         eb:SetAutoFocus(true)
         eb:SetScript("OnEscapePressed", function(self) self:Hide() end)
         eb:SetScript("OnEnterPressed", function(self) self:Hide() end)
         eb:Hide()
-        COH.editBox = eb
+        COL.editBox = eb
     end
 
-    COH.editBox:SetText(text)
-    COH.editBox:Show()
-    COH.editBox:HighlightText()
-    COH.editBox:SetFocus()
-    print("|cFFFFCC00COH:|r Press Ctrl+C to copy, then Escape to close.")
+    COL.editBox:SetText(text)
+    COL.editBox:Show()
+    COL.editBox:HighlightText()
+    COL.editBox:SetFocus()
+    print("|cFFFFCC00COL:|r Press Ctrl+C to copy, then Escape to close.")
 end
 
 -- ============================================================================
 -- Frame Visibility
 -- ============================================================================
 
-function COH:ToggleFrame()
-    local frame = COH.mainFrame or CreateMainFrame()
+function COL:ToggleFrame()
+    local frame = COL.mainFrame or CreateMainFrame()
     if frame:IsShown() then
         frame:Hide()
     else
         frame:Show()
-        COH:UpdateMainFrame()
+        COL:UpdateMainFrame()
     end
 end
 
-function COH:ShowFrame()
-    local frame = COH.mainFrame or CreateMainFrame()
+function COL:ShowFrame()
+    local frame = COL.mainFrame or CreateMainFrame()
     frame:Show()
-    COH:UpdateMainFrame()
+    COL:UpdateMainFrame()
 end
 
-function COH:DockToAuctionHouse()
-    if not COH.mainFrame or not AuctionHouseFrame then return end
-    if COH.settings.framePos then return end -- Respect saved position
+function COL:DockToAuctionHouse()
+    if not COL.mainFrame or not AuctionHouseFrame then return end
+    if COL.settings.framePos then return end -- Respect saved position
 
-    COH.mainFrame:ClearAllPoints()
-    COH.mainFrame:SetPoint("TOPLEFT", AuctionHouseFrame, "TOPRIGHT", 5, 0)
+    COL.mainFrame:ClearAllPoints()
+    COL.mainFrame:SetPoint("TOPLEFT", AuctionHouseFrame, "TOPRIGHT", 5, 0)
 end
 
 -- ============================================================================
@@ -853,7 +853,7 @@ end
 -- ============================================================================
 
 local function CreateMinimapButton()
-    local btn = CreateFrame("Button", "COH_MinimapButton", Minimap)
+    local btn = CreateFrame("Button", "COL_MinimapButton", Minimap)
     btn:SetSize(36, 36)
     btn:SetFrameStrata("MEDIUM")
     btn:SetFrameLevel(8)
@@ -881,7 +881,7 @@ local function CreateMinimapButton()
     local icon = btn:CreateTexture(nil, "BACKGROUND")
     icon:SetSize(28, 28)
     icon:SetPoint("CENTER", overlay, "TOPLEFT", 18, -18)
-    icon:SetTexture("Interface\\AddOns\\CraftingOrderHelper\\Icon")
+    icon:SetTexture("Interface\\AddOns\\CraftOrderList\\Icon")
 
     local mask = btn:CreateMaskTexture()
     mask:SetSize(28, 28)
@@ -898,7 +898,7 @@ local function CreateMinimapButton()
 
     btn.icon = icon
 
-    local angle = COH.settings.minimapAngle or 220
+    local angle = COL.settings.minimapAngle or 220
     local function UpdatePosition()
         local rad = math.rad(angle)
         local x = math.cos(rad) * 80
@@ -919,16 +919,16 @@ local function CreateMinimapButton()
         local scale = UIParent:GetEffectiveScale()
         cx, cy = cx / scale, cy / scale
         angle = math.deg(math.atan2(cy - my, cx - mx))
-        COH.settings.minimapAngle = angle
+        COL.settings.minimapAngle = angle
         UpdatePosition()
     end)
 
     btn:SetScript("OnClick", function()
-        COH:ToggleFrame()
+        COL:ToggleFrame()
     end)
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
-        GameTooltip:SetText("Crafting Order Helper", 1, 0.82, 0)
+        GameTooltip:SetText("Craft Order List", 1, 0.82, 0)
         GameTooltip:AddLine("Click to toggle materials list.", 0.7, 0.7, 0.7)
         GameTooltip:AddLine("Drag to reposition.", 0.7, 0.7, 0.7)
         GameTooltip:Show()
@@ -936,7 +936,7 @@ local function CreateMinimapButton()
     btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
     UpdatePosition()
-    COH.minimapButton = btn
+    COL.minimapButton = btn
 end
 
 -- ============================================================================
@@ -944,10 +944,10 @@ end
 -- ============================================================================
 
 local function CreateGetMaterialsButton(parent, getRecipeFunc)
-    local parentName = parent:GetName() or ("COH_Anon_" .. tostring(parent))
-    local buttonName = parentName .. "_COH_Btn"
+    local parentName = parent:GetName() or ("COL_Anon_" .. tostring(parent))
+    local buttonName = parentName .. "_COL_Btn"
 
-    if COH.buttonsCreated[buttonName] then return COH.buttonsCreated[buttonName] end
+    if COL.buttonsCreated[buttonName] then return COL.buttonsCreated[buttonName] end
 
     local btn = CreateFrame("Button", buttonName, parent, "UIPanelButtonTemplate")
     btn:SetSize(130, 22)
@@ -955,25 +955,25 @@ local function CreateGetMaterialsButton(parent, getRecipeFunc)
     btn:SetScript("OnClick", function()
         local recipeID = getRecipeFunc()
         if recipeID then
-            local addToExisting = #COH.materialList > 0
+            local addToExisting = #COL.materialList > 0
             if BuildMaterialList(recipeID, addToExisting) then
-                COH:ShowFrame()
+                COL:ShowFrame()
                 if addToExisting then
-                    print("|cFFFFCC00COH:|r Added to material list.")
+                    print("|cFFFFCC00COL:|r Added to material list.")
                 else
-                    print("|cFFFFCC00COH:|r Material list ready!")
+                    print("|cFFFFCC00COL:|r Material list ready!")
                 end
             else
-                print("|cFFFFCC00COH:|r No basic materials found.")
+                print("|cFFFFCC00COL:|r No basic materials found.")
             end
         else
-            print("|cFFFFCC00COH:|r No recipe selected.")
+            print("|cFFFFCC00COL:|r No recipe selected.")
         end
     end)
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetText("Get Materials List", 1, 1, 1)
-        if #COH.materialList > 0 then
+        if #COL.materialList > 0 then
             GameTooltip:AddLine("Adds to existing list", 0.7, 0.7, 0.7)
         else
             GameTooltip:AddLine("Creates new shopping list", 0.7, 0.7, 0.7)
@@ -982,7 +982,7 @@ local function CreateGetMaterialsButton(parent, getRecipeFunc)
     end)
     btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-    COH.buttonsCreated[buttonName] = btn
+    COL.buttonsCreated[buttonName] = btn
     return btn
 end
 
@@ -1006,9 +1006,9 @@ end
 local function SetupCraftingOrderButton()
     if not ProfessionsCustomerOrdersFrame then return end
     local frame = ProfessionsCustomerOrdersFrame
-    local buttonName = "COH_CraftingOrderButton"
+    local buttonName = "COL_CraftingOrderButton"
 
-    if COH.buttonsCreated[buttonName] then return end
+    if COL.buttonsCreated[buttonName] then return end
 
     local btn = CreateFrame("Button", buttonName, frame, "UIPanelButtonTemplate")
     btn:SetSize(130, 22)
@@ -1026,13 +1026,13 @@ local function SetupCraftingOrderButton()
     btn:SetScript("OnClick", function()
         local recipeID = GetRecipeID()
         if recipeID then
-            local addToExisting = #COH.materialList > 0
+            local addToExisting = #COL.materialList > 0
             if BuildMaterialList(recipeID, addToExisting) then
-                COH:ShowFrame()
+                COL:ShowFrame()
                 if addToExisting then
-                    print("|cFFFFCC00COH:|r Added to material list.")
+                    print("|cFFFFCC00COL:|r Added to material list.")
                 else
-                    print("|cFFFFCC00COH:|r Material list ready!")
+                    print("|cFFFFCC00COL:|r Material list ready!")
                 end
             end
         end
@@ -1041,7 +1041,7 @@ local function SetupCraftingOrderButton()
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetText("Get Materials List", 1, 1, 1)
-        if #COH.materialList > 0 then
+        if #COL.materialList > 0 then
             GameTooltip:AddLine("Adds to existing list", 0.7, 0.7, 0.7)
         else
             GameTooltip:AddLine("Creates new shopping list", 0.7, 0.7, 0.7)
@@ -1071,13 +1071,13 @@ local function SetupCraftingOrderButton()
     end
 
     C_Timer.After(0.2, UpdateVisibility)
-    COH.buttonsCreated[buttonName] = true
+    COL.buttonsCreated[buttonName] = true
 end
 
 local function SetupAuctionHouseToggle()
     if not AuctionHouseFrame then return end
-    local buttonName = "COH_AHToggleButton"
-    if COH.buttonsCreated[buttonName] then return end
+    local buttonName = "COL_AHToggleButton"
+    if COL.buttonsCreated[buttonName] then return end
 
     local btn = CreateFrame("Button", buttonName, AuctionHouseFrame, "UIPanelButtonTemplate")
     btn:SetSize(100, 22)
@@ -1092,7 +1092,7 @@ local function SetupAuctionHouseToggle()
         btn:SetPoint("TOPRIGHT", AuctionHouseFrame, "TOPRIGHT", -60, -30)
     end
 
-    btn:SetScript("OnClick", function() COH:ToggleFrame() end)
+    btn:SetScript("OnClick", function() COL:ToggleFrame() end)
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
         GameTooltip:SetText("Crafting Materials", 1, 1, 1)
@@ -1101,7 +1101,7 @@ local function SetupAuctionHouseToggle()
     end)
     btn:SetScript("OnLeave", function() GameTooltip:Hide() end)
 
-    COH.buttonsCreated[buttonName] = true
+    COL.buttonsCreated[buttonName] = true
 end
 
 -- ============================================================================
@@ -1109,68 +1109,68 @@ end
 -- ============================================================================
 
 local function LoadSettings()
-    if not COH_SavedData then return end
+    if not COL_SavedData then return end
 
-    if COH_SavedData.settings then
-        for k, v in pairs(COH_SavedData.settings) do
-            COH.settings[k] = v
+    if COL_SavedData.settings then
+        for k, v in pairs(COL_SavedData.settings) do
+            COL.settings[k] = v
         end
     end
 
     -- Validate loaded settings
-    COH.settings.craftCount = math.max(1, math.min(999, tonumber(COH.settings.craftCount) or 1))
-    COH.settings.qualityFilter = tonumber(COH.settings.qualityFilter) or 0
-    if COH.settings.qualityFilter < 0 or COH.settings.qualityFilter > 3 then
-        COH.settings.qualityFilter = 0
+    COL.settings.craftCount = math.max(1, math.min(999, tonumber(COL.settings.craftCount) or 1))
+    COL.settings.qualityFilter = tonumber(COL.settings.qualityFilter) or 0
+    if COL.settings.qualityFilter < 0 or COL.settings.qualityFilter > 3 then
+        COL.settings.qualityFilter = 0
     end
     local validSorts = { name = true, needed = true, status = true }
-    if not validSorts[COH.settings.sortBy] then
-        COH.settings.sortBy = "name"
+    if not validSorts[COL.settings.sortBy] then
+        COL.settings.sortBy = "name"
     end
-    if type(COH.settings.hideCompleted) ~= "boolean" then
-        COH.settings.hideCompleted = false
+    if type(COL.settings.hideCompleted) ~= "boolean" then
+        COL.settings.hideCompleted = false
     end
 
-    if COH_SavedData.materialList and #COH_SavedData.materialList > 0 then
-        COH.materialList = COH_SavedData.materialList
-        COH.recipeName = COH_SavedData.recipeName or ""
+    if COL_SavedData.materialList and #COL_SavedData.materialList > 0 then
+        COL.materialList = COL_SavedData.materialList
+        COL.recipeName = COL_SavedData.recipeName or ""
     end
 end
 
 local function SaveSettings()
-    COH_SavedData = {
+    COL_SavedData = {
         settings = {
-            qualityFilter = COH.settings.qualityFilter,
-            hideCompleted = COH.settings.hideCompleted,
-            sortBy = COH.settings.sortBy,
-            craftCount = COH.settings.craftCount,
-            framePos = COH.settings.framePos,
-            minimapAngle = COH.settings.minimapAngle,
+            qualityFilter = COL.settings.qualityFilter,
+            hideCompleted = COL.settings.hideCompleted,
+            sortBy = COL.settings.sortBy,
+            craftCount = COL.settings.craftCount,
+            framePos = COL.settings.framePos,
+            minimapAngle = COL.settings.minimapAngle,
         },
-        materialList = COH.materialList,
-        recipeName = COH.recipeName,
+        materialList = COL.materialList,
+        recipeName = COL.recipeName,
     }
 end
 
 local function ApplySettings()
-    if not COH.mainFrame then return end
+    if not COL.mainFrame then return end
 
-    local qf = COH.settings.qualityFilter
-    UIDropDownMenu_SetText(COH_QualityDropdown, QUALITY_ICONS[qf])
-    COH_HideCompleted:SetChecked(COH.settings.hideCompleted)
+    local qf = COL.settings.qualityFilter
+    UIDropDownMenu_SetText(COL_QualityDropdown, QUALITY_ICONS[qf])
+    COL_HideCompleted:SetChecked(COL.settings.hideCompleted)
 
-    if COH.mainFrame.SORT_LABELS then
-        UIDropDownMenu_SetText(COH_SortDropdown, COH.mainFrame.SORT_LABELS[COH.settings.sortBy] or "Name")
+    if COL.mainFrame.SORT_LABELS then
+        UIDropDownMenu_SetText(COL_SortDropdown, COL.mainFrame.SORT_LABELS[COL.settings.sortBy] or "Name")
     end
 
-    if COH.mainFrame.craftValue then
-        COH.mainFrame.craftValue:SetText(tostring(COH.settings.craftCount))
+    if COL.mainFrame.craftValue then
+        COL.mainFrame.craftValue:SetText(tostring(COL.settings.craftCount))
     end
 
-    if COH.settings.framePos then
-        local pos = COH.settings.framePos
-        COH.mainFrame:ClearAllPoints()
-        COH.mainFrame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
+    if COL.settings.framePos then
+        local pos = COL.settings.framePos
+        COL.mainFrame:ClearAllPoints()
+        COL.mainFrame:SetPoint(pos[1], UIParent, pos[2], pos[3], pos[4])
     end
 end
 
@@ -1199,8 +1199,8 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
             CreateMainFrame()
             CreateMinimapButton()
             ApplySettings()
-            COH:UpdateMainFrame()
-            print("|cFFFFCC00CraftingOrderHelper|r loaded. /coh to toggle.")
+            COL:UpdateMainFrame()
+            print("|cFFFFCC00CraftOrderList|r loaded. /col to toggle.")
         elseif loadedAddon == "Blizzard_Professions" then
             C_Timer.After(0.1, SetupProfessionsButton)
         elseif loadedAddon == "Blizzard_ProfessionsCustomerOrders" then
@@ -1214,9 +1214,9 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 
     elseif event == "AUCTION_HOUSE_SHOW" then
         SetupAuctionHouseToggle()
-        if #COH.materialList > 0 then
-            COH:ShowFrame()
-            COH:DockToAuctionHouse()
+        if #COL.materialList > 0 then
+            COL:ShowFrame()
+            COL:DockToAuctionHouse()
         end
 
     elseif event == "CRAFTINGORDERS_CAN_REQUEST" then
@@ -1224,12 +1224,12 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
 
     elseif event == "BAG_UPDATE" or event == "BAG_UPDATE_DELAYED"
         or event == "MAIL_INBOX_UPDATE" or event == "TRADE_ACCEPT_UPDATE" then
-        if COH.mainFrame and COH.mainFrame:IsShown() and not bagUpdatePending then
+        if COL.mainFrame and COL.mainFrame:IsShown() and not bagUpdatePending then
             bagUpdatePending = true
             C_Timer.After(0.3, function()
                 bagUpdatePending = false
-                if COH.mainFrame and COH.mainFrame:IsShown() then
-                    COH:UpdateMainFrame()
+                if COL.mainFrame and COL.mainFrame:IsShown() then
+                    COL:UpdateMainFrame()
                 end
             end)
         end
@@ -1238,7 +1238,7 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
         local itemID = ...
         if not itemID then return end
 
-        for _, mat in ipairs(COH.materialList) do
+        for _, mat in ipairs(COL.materialList) do
             -- Only update display name from the base reagent (index 1)
             if mat.reagents and mat.reagents[1] and mat.reagents[1].itemID == itemID then
                 local name = C_Item.GetItemNameByID(itemID)
@@ -1248,8 +1248,8 @@ eventFrame:SetScript("OnEvent", function(self, event, ...)
             end
         end
 
-        if COH.mainFrame and COH.mainFrame:IsShown() then
-            COH:UpdateMainFrame()
+        if COL.mainFrame and COL.mainFrame:IsShown() then
+            COL:UpdateMainFrame()
         end
 
     elseif event == "PLAYER_LOGOUT" then
@@ -1261,37 +1261,37 @@ end)
 -- Slash Commands
 -- ============================================================================
 
-SLASH_COH1 = "/coh"
-SLASH_COH2 = "/craftingorderhelper"
-SlashCmdList["COH"] = function(msg)
+SLASH_COL1 = "/col"
+SLASH_COL2 = "/craftorderlist"
+SlashCmdList["COL"] = function(msg)
     msg = (msg or ""):lower():trim()
     if msg == "" then
-        COH:ToggleFrame()
+        COL:ToggleFrame()
     elseif msg == "show" then
-        COH:ShowFrame()
+        COL:ShowFrame()
     elseif msg == "hide" then
-        if COH.mainFrame then COH.mainFrame:Hide() end
+        if COL.mainFrame then COL.mainFrame:Hide() end
     elseif msg == "clear" then
-        COH.materialList = {}
-        COH.recipeName = ""
-        COH:UpdateMainFrame()
-        print("|cFFFFCC00COH:|r List cleared.")
+        COL.materialList = {}
+        COL.recipeName = ""
+        COL:UpdateMainFrame()
+        print("|cFFFFCC00COL:|r List cleared.")
     elseif msg == "reset" then
-        COH.settings.framePos = nil
-        if COH.mainFrame then
-            COH.mainFrame:ClearAllPoints()
-            COH.mainFrame:SetPoint("CENTER", UIParent, "CENTER", 400, 0)
+        COL.settings.framePos = nil
+        if COL.mainFrame then
+            COL.mainFrame:ClearAllPoints()
+            COL.mainFrame:SetPoint("CENTER", UIParent, "CENTER", 400, 0)
         end
-        print("|cFFFFCC00COH:|r Window position reset.")
+        print("|cFFFFCC00COL:|r Window position reset.")
     elseif msg == "help" then
-        print("|cFFFFCC00Crafting Order Helper commands:|r")
-        print("  /coh — Toggle the materials window")
-        print("  /coh show — Show the materials window")
-        print("  /coh hide — Hide the materials window")
-        print("  /coh clear — Clear the shopping list")
-        print("  /coh reset — Reset window position")
-        print("  /coh help — Show this help message")
+        print("|cFFFFCC00Craft Order List commands:|r")
+        print("  /col — Toggle the materials window")
+        print("  /col show — Show the materials window")
+        print("  /col hide — Hide the materials window")
+        print("  /col clear — Clear the shopping list")
+        print("  /col reset — Reset window position")
+        print("  /col help — Show this help message")
     else
-        print("|cFFFFCC00COH:|r Unknown command '" .. msg .. "'. Type /coh help for options.")
+        print("|cFFFFCC00COL:|r Unknown command '" .. msg .. "'. Type /col help for options.")
     end
 end

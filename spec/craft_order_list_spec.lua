@@ -1,16 +1,16 @@
--- Busted test suite for CraftingOrderHelper
+-- Busted test suite for CraftOrderList
 
-describe("CraftingOrderHelper", function()
+describe("CraftOrderList", function()
     local MockData
-    local COH
+    local COL
 
     setup(function()
         MockData = _G.MockData
-        loadfile("CraftingOrderHelper.lua")("CraftingOrderHelper", {})
+        loadfile("CraftOrderList.lua")("CraftOrderList", {})
     end)
 
     before_each(function()
-        COH_SavedData = nil
+        COL_SavedData = nil
         MockData.itemCounts = {}
         MockData.itemNames = {}
         MockData.recipeInfos = {}
@@ -25,27 +25,27 @@ describe("CraftingOrderHelper", function()
         end)
 
         it("should register slash commands", function()
-            assert.is_not_nil(SlashCmdList["COH"])
+            assert.is_not_nil(SlashCmdList["COL"])
         end)
     end)
 
     describe("slash commands", function()
-        it("should handle /coh clear", function()
-            SlashCmdList["COH"]("clear")
+        it("should handle /col clear", function()
+            SlashCmdList["COL"]("clear")
             -- Should not error
         end)
 
-        it("should handle /coh reset", function()
-            SlashCmdList["COH"]("reset")
+        it("should handle /col reset", function()
+            SlashCmdList["COL"]("reset")
             -- Should not error
         end)
 
-        it("should handle /coh show", function()
-            SlashCmdList["COH"]("show")
+        it("should handle /col show", function()
+            SlashCmdList["COL"]("show")
         end)
 
-        it("should handle /coh hide", function()
-            SlashCmdList["COH"]("hide")
+        it("should handle /col hide", function()
+            SlashCmdList["COL"]("hide")
         end)
     end)
 end)

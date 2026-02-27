@@ -1,6 +1,6 @@
-# Crafting Order Helper
+# Craft Order List
 
-Crafting Order Helper is a World of Warcraft addon that gives you a visual shopping list for crafting materials. It shows what you need, what you have, and lets you search the Auction House directly from the list.
+Craft Order List is a World of Warcraft addon that gives you a visual shopping list for crafting materials. It shows what you need, what you have, and lets you search the Auction House directly from the list.
 
 ## Features
 - Automatically builds a material shopping list from any recipe or crafting order.
@@ -26,14 +26,14 @@ Crafting Order Helper is a World of Warcraft addon that gives you a visual shopp
 5. Use the **Search AH** buttons or **Search Next** to find what you need.
 
 ## Slash Commands
-- `/coh` — Toggle the materials window.
-- `/coh show` — Show the materials window.
-- `/coh hide` — Hide the materials window.
-- `/coh clear` — Clear the current shopping list.
-- `/coh reset` — Reset the window position to default.
+- `/col` — Toggle the materials window.
+- `/col show` — Show the materials window.
+- `/col hide` — Hide the materials window.
+- `/col clear` — Clear the current shopping list.
+- `/col reset` — Reset the window position to default.
 
 ## Installation
-- Download from [CurseForge](https://www.curseforge.com/wow/addons/craftingorderhelper) or [GitHub Releases](https://github.com/nate8282/CraftingOrderHelper/releases).
+- Download from [CurseForge](https://www.curseforge.com/wow/addons/craftorderlist) or [GitHub Releases](https://github.com/nate8282/CraftOrderList/releases).
 - Extract the folder to your World of Warcraft AddOns directory:
   `World of Warcraft/_retail_/Interface/AddOns/`
 - Restart WoW or type `/reload` to load the addon.

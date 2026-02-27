@@ -51,8 +51,8 @@ jobs:
       - name: Read current .toc values
         id: toc
         run: |
-          IFACE=$(grep '^## Interface:' CraftingOrderHelper.toc | awk '{print $3}')
-          VERSION=$(grep '^## Version:' CraftingOrderHelper.toc | awk '{print $3}')
+          IFACE=$(grep '^## Interface:' CraftOrderList.toc | awk '{print $3}')
+          VERSION=$(grep '^## Version:' CraftOrderList.toc | awk '{print $3}')
           echo "interface=$IFACE" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Current .toc: Interface $IFACE, Version $VERSION"
@@ -71,12 +71,12 @@ jobs:
           VPATCH=$(echo "$CUR_VERSION" | cut -d'.' -f3)
           NEW_VERSION="$VMAJ.$VMIN.$(( VPATCH + 1 ))"
 
-          sed -i "s/^## Interface: .*/## Interface: $NEW_IFACE/" CraftingOrderHelper.toc
-          sed -i "s/^## Version: .*/## Version: $NEW_VERSION/" CraftingOrderHelper.toc
+          sed -i "s/^## Interface: .*/## Interface: $NEW_IFACE/" CraftOrderList.toc
+          sed -i "s/^## Version: .*/## Version: $NEW_VERSION/" CraftOrderList.toc
 
           git config user.name "N8"
           git config user.email "52011990+nate8282@users.noreply.github.com"
-          git add CraftingOrderHelper.toc
+          git add CraftOrderList.toc
           git commit -m "Bump interface to $NEW_IFACE (WoW $WOW_VER)"
           git push origin master
           git tag "v$NEW_VERSION"

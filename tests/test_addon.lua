@@ -1,4 +1,4 @@
--- Legacy unit tests for CraftingOrderHelper
+-- Legacy unit tests for CraftOrderList
 -- Run: lua5.3 tests/test_addon.lua
 
 -- Lua 5.3 compat: WoW uses Lua 5.1 where unpack is a global
@@ -111,29 +111,29 @@ function CreateAtlasMarkup(atlas, height, width)
 end
 
 -- Load addon (pass addon name and namespace table, simulating WoW's vararg loader)
-print("Loading CraftingOrderHelper...")
-loadfile("CraftingOrderHelper.lua")("CraftingOrderHelper", {})
+print("Loading CraftOrderList...")
+loadfile("CraftOrderList.lua")("CraftOrderList", {})
 
-print("\n=== CraftingOrderHelper Tests ===\n")
+print("\n=== CraftOrderList Tests ===\n")
 
 test("slash command registered", function()
-    assertNotNil(SlashCmdList["COH"])
+    assertNotNil(SlashCmdList["COL"])
 end)
 
-test("/coh clear does not error", function()
-    SlashCmdList["COH"]("clear")
+test("/col clear does not error", function()
+    SlashCmdList["COL"]("clear")
 end)
 
-test("/coh reset does not error", function()
-    SlashCmdList["COH"]("reset")
+test("/col reset does not error", function()
+    SlashCmdList["COL"]("reset")
 end)
 
-test("/coh show does not error", function()
-    SlashCmdList["COH"]("show")
+test("/col show does not error", function()
+    SlashCmdList["COL"]("show")
 end)
 
-test("/coh toggle does not error", function()
-    SlashCmdList["COH"]("")
+test("/col toggle does not error", function()
+    SlashCmdList["COL"]("")
 end)
 
 test("strsplit works correctly", function()

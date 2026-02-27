@@ -1,6 +1,6 @@
 # Contributing Guidelines
 
-Thank you for contributing to Crafting Order Helper!
+Thank you for contributing to Craft Order List!
 
 ## Coding Standards
 - Use consistent 4-space indentation.

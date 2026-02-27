@@ -46,5 +46,5 @@ jobs:
       - name: Run Luacheck
         uses: nebularg/actions-luacheck@v1
         with:
-          files: "CraftingOrderHelper.lua"
+          files: "CraftOrderList.lua"
           annotate: warning
