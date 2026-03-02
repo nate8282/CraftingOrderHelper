@@ -1794,14 +1794,31 @@ local function SetupAuctionHouseToggle()
     local btn = CreateFrame("Button", buttonName, AuctionHouseFrame, "UIPanelButtonTemplate")
     btn:SetSize(100, 22)
     btn:SetText("Materials")
+    btn:SetFrameStrata("HIGH")
+    btn:SetFrameLevel(100)
 
-    local searchBar = AuctionHouseFrame.SearchBar
-    if searchBar and searchBar.FavoritesSearchButton then
-        btn:SetPoint("RIGHT", searchBar.FavoritesSearchButton, "LEFT", -5, 0)
-    elseif searchBar then
-        btn:SetPoint("RIGHT", searchBar, "RIGHT", -30, 0)
-    else
-        btn:SetPoint("TOPRIGHT", AuctionHouseFrame, "TOPRIGHT", -60, -30)
+    -- Reposition dynamically: on the Auctions tab the Cancel Auction button sits
+    -- at BOTTOMRIGHT, so we shift left of it. On Buy/Sell tabs we anchor to the
+    -- corner directly. Try both known child paths for the cancel button.
+    local function PositionBtn()
+        btn:ClearAllPoints()
+        local cancelBtn = (AuctionHouseFrame.AuctionsFrame and AuctionHouseFrame.AuctionsFrame.CancelAuctionButton)
+                       or AuctionHouseFrame.CancelAuctionButton
+        if cancelBtn and cancelBtn:IsShown() then
+            btn:SetPoint("RIGHT", cancelBtn, "LEFT", -5, 0)
+        else
+            btn:SetPoint("BOTTOMRIGHT", AuctionHouseFrame, "BOTTOMRIGHT", -5, 5)
+        end
+    end
+
+    PositionBtn()
+
+    -- Re-position whenever a tab is clicked
+    for _, tabName in ipairs({ "BuyTab", "SellTab", "AuctionsTab" }) do
+        local tab = AuctionHouseFrame[tabName]
+        if tab then
+            tab:HookScript("OnClick", function() C_Timer.After(0, PositionBtn) end)
+        end
     end
 
     btn:SetScript("OnClick", function() COL:ToggleFrame() end)
