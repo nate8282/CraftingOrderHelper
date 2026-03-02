@@ -375,15 +375,38 @@ local function GetCurrentRecipeID()
     if ProfessionsCustomerOrdersFrame and ProfessionsCustomerOrdersFrame:IsShown()
        and ProfessionsCustomerOrdersFrame.Form
        and ProfessionsCustomerOrdersFrame.Form.transaction then
-        return ProfessionsCustomerOrdersFrame.Form.transaction.recipeID
+        local t = ProfessionsCustomerOrdersFrame.Form.transaction
+        -- In zhCN/zhTW builds transaction.recipeID may hold an order ID rather
+        -- than a recipe ID, so validate it against GetRecipeInfo before using it.
+        -- Fall back to transaction.spellID which some locales use instead.
+        local id = t.recipeID
+        if id and C_TradeSkillUI.GetRecipeInfo(id) then
+            return id
+        end
+        id = t.spellID
+        if id and C_TradeSkillUI.GetRecipeInfo(id) then
+            return id
+        end
     end
+    -- Guard IsVisible(): SchematicForm.transaction persists after the window is closed
+    -- and reopened. Without the visibility check, clicking Get Materials with no recipe
+    -- actively selected would read the stale transaction and rebuild the old list.
     if ProfessionsFrame and ProfessionsFrame:IsShown()
        and ProfessionsFrame.CraftingPage
        and ProfessionsFrame.CraftingPage.SchematicForm
+       and ProfessionsFrame.CraftingPage.SchematicForm:IsVisible()
        and ProfessionsFrame.CraftingPage.SchematicForm.transaction then
         return ProfessionsFrame.CraftingPage.SchematicForm.transaction.recipeID
     end
     return nil
+end
+
+-- Auto-size a UIPanelButton to its text label.
+-- Using GetFontString():GetStringWidth() gives the correct width for every locale
+-- and every font substitution (e.g. Chinese WoW uses wider CJK-compatible fonts).
+local function SizeBtn(btn)
+    local fs = btn:GetFontString()
+    if fs then btn:SetWidth(fs:GetStringWidth() + 16) end
 end
 
 -- ============================================================================
@@ -670,12 +693,8 @@ local function CreateMainFrame()
     summary:SetTextColor(0.7, 0.7, 0.7)
     frame.summary = summary
 
-    -- Bottom buttons — width is auto-sized to text + 16px padding so every button
-    -- has the same internal spacing regardless of label length.
-    local function SizeBtn(btn)
-        local fs = btn:GetFontString()
-        if fs then btn:SetWidth(fs:GetStringWidth() + 16) end
-    end
+    -- Bottom buttons — width is auto-sized to text + 16px padding via the file-level
+    -- SizeBtn helper, so every button fits its label regardless of locale or font size.
 
     -- Get Materials button: loads the recipe currently open in the crafting window
     local getMatsBtn = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
@@ -1587,8 +1606,9 @@ local function CreateGetMaterialsButton(parent, getRecipeFunc)
     if COL.buttonsCreated[buttonName] then return COL.buttonsCreated[buttonName] end
 
     local btn = CreateFrame("Button", buttonName, parent, "UIPanelButtonTemplate")
-    btn:SetSize(130, 22)
+    btn:SetHeight(22)
     btn:SetText("Get Materials List")
+    SizeBtn(btn)
     btn:SetScript("OnClick", function()
         local recipeID = getRecipeFunc()
         if recipeID then
@@ -1628,7 +1648,9 @@ local function SetupProfessionsButton()
     local craftingPage = ProfessionsFrame.CraftingPage
 
     local btn = CreateGetMaterialsButton(craftingPage, function()
-        if craftingPage.SchematicForm and craftingPage.SchematicForm.transaction then
+        -- IsVisible() guards against stale transactions that persist after close/reopen.
+        if craftingPage.SchematicForm and craftingPage.SchematicForm:IsVisible()
+           and craftingPage.SchematicForm.transaction then
             return craftingPage.SchematicForm.transaction.recipeID
         end
         return nil
@@ -1721,20 +1743,16 @@ local function SetupCraftingOrderButton()
     if COL.buttonsCreated[buttonName] then return end
 
     local btn = CreateFrame("Button", buttonName, frame, "UIPanelButtonTemplate")
-    btn:SetSize(130, 22)
+    btn:SetHeight(22)
     btn:SetText("Get Materials List")
+    SizeBtn(btn)
     btn:SetFrameStrata("HIGH")
     btn:SetFrameLevel(100)
 
-    local function GetRecipeID()
-        if frame.Form and frame.Form.transaction then
-            return frame.Form.transaction.recipeID
-        end
-        return nil
-    end
-
     btn:SetScript("OnClick", function()
-        local recipeID = GetRecipeID()
+        -- Use the module-level GetCurrentRecipeID which validates transaction.recipeID
+        -- and falls back to transaction.spellID for zhCN/zhTW clients.
+        local recipeID = GetCurrentRecipeID()
         if recipeID then
             local addToExisting = #COL.materialList > 0
             if BuildMaterialList(recipeID, addToExisting) then
@@ -1766,9 +1784,11 @@ local function SetupCraftingOrderButton()
     end
 
     local function UpdateVisibility()
-        -- Fall back to the parent frame's own visibility when Form is absent or
-        -- has a different structure (e.g. zhCN/zhTW client builds).
-        if frame:IsVisible() and (not frame.Form or frame.Form:IsVisible()) then
+        -- Show whenever the patron orders window itself is visible.
+        -- Removed the frame.Form:IsVisible() guard — in zhCN/zhTW builds
+        -- Form exists but does not report IsVisible() when a recipe is shown,
+        -- which caused the button to always stay hidden on those clients.
+        if frame:IsVisible() then
             PositionButton()
             btn:Show()
         else
@@ -1792,8 +1812,9 @@ local function SetupAuctionHouseToggle()
     if COL.buttonsCreated[buttonName] then return end
 
     local btn = CreateFrame("Button", buttonName, AuctionHouseFrame, "UIPanelButtonTemplate")
-    btn:SetSize(100, 22)
+    btn:SetHeight(22)
     btn:SetText("Materials")
+    SizeBtn(btn)
     btn:SetFrameStrata("HIGH")
     btn:SetFrameLevel(100)
 
