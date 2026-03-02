@@ -53,3 +53,5 @@ Two actions can be bound in the WoW **Key Bindings** panel under the **Craft Ord
 
 ## Contributing
 If you would like to suggest changes or report bugs, feel free to open an issue or submit a pull request. Please ensure that your contributions maintain the project's standards.
+
+Note: This addon was built using the US version of WoW. I don’t have access to other regions, but I’ll try to address issues if reported. Support for non-US versions may be limited.
